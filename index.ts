@@ -325,7 +325,7 @@ async function startEventAPI(options?: { timeout?: number, pollIntervalMs?: numb
     }, options?.pollIntervalMs ?? 1000);
 }
 
-/** Can be called to stop the event api. Automatically called if the connection is lost. */
+/** Can be called to stop the Event API. Automatically called if the connection is lost. */
 function stopEventAPI() {
     if (eventAPIInterval !== null) {
         clearInterval(eventAPIInterval);
@@ -342,12 +342,13 @@ const EVENT_EMITTER = new TypedEmitter<{
     "started": () => void,
     "stopped": () => void,
     "event": (event: IngameAPI.Event) => void,
+    "error": (error?: any) => void,
     "game-started": (event: IngameAPI.GameStartEvent) => void,
     "minions-spawning": (event: IngameAPI.MinionsSpawningEvent) => void,
     "first-turret-destroyed": (event: IngameAPI.FirstBrickEvent) => void,
-    "turret-destroyed": (event: IngameAPI.TurretKilledEvent) => void,
-    "inhibitor-destroyed": (event: IngameAPI.InhibKilledEvent) => void,
-    "inhibitor-respawned": (event: IngameAPI.InhibRespawnedEvent) => void,
+    "turret-destroyed": (event: IngameAPI.TurretKilledEvent & { StructureData: ReturnType<typeof extractStructureDataFromName> }) => void,
+    "inhibitor-destroyed": (event: IngameAPI.InhibKilledEvent & { StructureData: ReturnType<typeof extractStructureDataFromName> }) => void,
+    "inhibitor-respawned": (event: IngameAPI.InhibRespawnedEvent & { StructureData: ReturnType<typeof extractStructureDataFromName> }) => void,
     "dragon-killed": (event: IngameAPI.DragonKillEvent) => void,
     "void-grub-killed": (event: IngameAPI.HordeKillEvent) => void,
     "herald-killed": (event: IngameAPI.HeraldKillEvent) => void,
@@ -361,6 +362,7 @@ const EVENT_EMITTER = new TypedEmitter<{
 function onLiveClientEvent(event: IngameAPI.Event) {
     events.push(event);
 
+    EVENT_EMITTER.emit("event", event);
     switch (event.EventName) {
         case "GameStart":
             EVENT_EMITTER.emit("game-started", event);
@@ -372,13 +374,13 @@ function onLiveClientEvent(event: IngameAPI.Event) {
             EVENT_EMITTER.emit("first-turret-destroyed", event);
             break;
         case "TurretKilled":
-            EVENT_EMITTER.emit("turret-destroyed", event);
+            EVENT_EMITTER.emit("turret-destroyed", { ...event, StructureData: extractStructureDataFromName(event.TurretKilled) });
             break;
         case "InhibKilled":
-            EVENT_EMITTER.emit("inhibitor-destroyed", event);
+            EVENT_EMITTER.emit("inhibitor-destroyed", { ...event, StructureData: extractStructureDataFromName(event.InhibKilled) });
             break;
         case "InhibRespawned":
-            EVENT_EMITTER.emit("inhibitor-respawned", event);
+            EVENT_EMITTER.emit("inhibitor-respawned", { ...event, StructureData: extractStructureDataFromName(event.InhibRespawned) });
             break;
         case "DragonKill":
             EVENT_EMITTER.emit("dragon-killed", event);
@@ -407,6 +409,17 @@ function onLiveClientEvent(event: IngameAPI.Event) {
     }
 }
 
+function extractStructureDataFromName(name: string) {
+    const [_type, _team, _lane] = name.split("_");
+
+    return {
+        name,
+        type: _type === "Barracks" ? "Inhibitor" : _type,
+        team: _team === "T1" ? "Blue" : "Red",
+        lane: _lane[0] === "L" ? "Top" : _lane[0] === "C" ? "Middle" : "Bottom"
+    } as { name: string, type: "Turret" | "Inhibitor", team: "Blue" | "Red", lane: "Top" | "Middle" | "Bottom" }
+}
+
 const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
 async function waitForLiveClientAvailability(timeout = 30000) {
@@ -416,59 +429,96 @@ async function waitForLiveClientAvailability(timeout = 30000) {
         if (summonerName !== null)
             return;
 
-        await delay(1000);
         elapsedTime += 1000;
+        if (elapsedTime < timeout)
+            await delay(1000);
     }
 
-    throw new Error("Live Client Data is not available.");
+    throw new Error(`Ingame API not available after ${timeout}ms.`);
 }
 
 async function getLiveClientActivePlayerSummonerName() {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayername" }).then(res => res.data as string, err => null);
+    return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayername" }).then(res => res.data as string, err => {
+        EVENT_EMITTER.emit("error", err);
+        return null;
+    });
 }
 
 async function getLiveClientData(): Promise<IngameAPI.AllGameData | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/allgamedata" }).then(res => res.data, err => null)
+    return await axiosInstance({ method: "get", url: "/liveclientdata/allgamedata" }).then(res => res.data, err => {
+        EVENT_EMITTER.emit("error", err);
+        return null;
+    })
 }
 
 async function getLiveClientActivePlayer(): Promise<IngameAPI.LocalPlayer | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayer" }).then(res => res.data, err => null)
+    return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayer" }).then(res => res.data, err => {
+        EVENT_EMITTER.emit("error", err);
+        return null;
+    })
 }
 
 async function getLiveClientActivePlayerAbilities(): Promise<IngameAPI.LocalPlayerAbilities | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayerabilities" }).then(res => res.data, err => null)
+    return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayerabilities" }).then(res => res.data, err => {
+        EVENT_EMITTER.emit("error", err);
+        return null;
+    })
 }
 
 async function getLiveClientActivePlayerRunes(): Promise<IngameAPI.LocalPlayerRunes | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayerrunes" }).then(res => res.data, err => null)
+    return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayerrunes" }).then(res => res.data, err => {
+        EVENT_EMITTER.emit("error", err);
+        return null;
+    })
 }
 
 async function getLiveClientPlayerList(): Promise<IngameAPI.Player[] | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/playerlist" }).then(res => res.data, err => null)
+    return await axiosInstance({ method: "get", url: "/liveclientdata/playerlist" }).then(res => res.data, err => {
+        EVENT_EMITTER.emit("error", err);
+        return null;
+    })
 }
 
 async function getLiveClientPlayerScore(summonerName: string): Promise<IngameAPI.PlayerScores | null> {
-    return await axiosInstance({ method: "get", url: encodeURI("/liveclientdata/playerscores?summonerName=" + summonerName) }).then(res => res.data, err => null)
+    return await axiosInstance({ method: "get", url: encodeURI("/liveclientdata/playerscores?summonerName=" + summonerName) }).then(res => res.data, err => {
+        EVENT_EMITTER.emit("error", err);
+        return null;
+    })
 }
 
 async function getLiveClientPlayerSummonerSpells(summonerName: string): Promise<IngameAPI.PlayerSummonerSpells | null> {
-    return await axiosInstance({ method: "get", url: encodeURI("/liveclientdata/playersummonerspells?summonerName=" + summonerName) }).then(res => res.data, err => null)
+    return await axiosInstance({ method: "get", url: encodeURI("/liveclientdata/playersummonerspells?summonerName=" + summonerName) }).then(res => res.data, err => {
+        EVENT_EMITTER.emit("error", err);
+        return null;
+    })
 }
 
 async function getLiveClientPlayerMainRunes(summonerName: string): Promise<IngameAPI.PlayerMainRunes | null> {
-    return await axiosInstance({ method: "get", url: encodeURI("/liveclientdata/playermainrunes?summonerName=" + summonerName) }).then(res => res.data, err => null)
+    return await axiosInstance({ method: "get", url: encodeURI("/liveclientdata/playermainrunes?summonerName=" + summonerName) }).then(res => res.data, err => {
+        EVENT_EMITTER.emit("error", err);
+        return null;
+    })
 }
 
 async function getLiveClientPlayerItems(summonerName: string): Promise<IngameAPI.PlayerItem[] | null> {
-    return await axiosInstance({ method: "get", url: encodeURI("/liveclientdata/playeritems?summonerName=" + summonerName) }).then(res => res.data, err => null)
+    return await axiosInstance({ method: "get", url: encodeURI("/liveclientdata/playeritems?summonerName=" + summonerName) }).then(res => res.data, err => {
+        EVENT_EMITTER.emit("error", err);
+        return null;
+    })
 }
 
 async function getLiveClientEvents(): Promise<{ Events: IngameAPI.Event[] } | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/eventdata" }).then(res => res.data, err => null)
+    return await axiosInstance({ method: "get", url: "/liveclientdata/eventdata" }).then(res => res.data, err => {
+        EVENT_EMITTER.emit("error", err);
+        return null;
+    })
 }
 
 async function getLiveClientGameStats(): Promise<IngameAPI.GameStats | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/gamestats" }).then(res => res.data, err => null)
+    return await axiosInstance({ method: "get", url: "/liveclientdata/gamestats" }).then(res => res.data, err => {
+        EVENT_EMITTER.emit("error", err);
+        return null;
+    })
 }
 
 const IngameAPI = {
