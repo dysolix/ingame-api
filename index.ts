@@ -29,7 +29,7 @@ XWehWA==
 -----END CERTIFICATE-----`;
 
 const axiosInstance = axios.create({
-    baseURL: "http://localhost:2999",
+    baseURL: "https://localhost:2999",
     httpsAgent: new Agent({ ca: RIOT_GAMES_CERTIFICATE })
 });
 
@@ -299,9 +299,10 @@ let events: IngameAPI.Event[] = [];
 /**
  * Waits for the live client to be available and starts the event api.
  * @param options.timeout The maximum time to wait for the live client to be available. Default is 30 seconds.
+ * @param options.pollIntervalMs The interval in milliseconds to poll the live client for new events. Default is 1000ms.
  * @param options.cert The certificate to use for the connection. If not provided, the default Riot Games certificate is used. If null is provided, certificate validation is disabled.
  */
-async function startEventAPI(options?: { timeout?: number, cert?: string | null }) {
+async function startEventAPI(options?: { timeout?: number, pollIntervalMs?: number, cert?: string | null }) {
     consecutiveErrors = 0;
     events = [];
     eventAPIInterval = null;
@@ -321,7 +322,7 @@ async function startEventAPI(options?: { timeout?: number, cert?: string | null 
                 .sort((a, b) => a.EventTime - b.EventTime)
                 .forEach(e => onLiveClientEvent(e));
         }
-    }, 1000);
+    }, options?.pollIntervalMs ?? 1000);
 }
 
 /** Can be called to stop the event api. Automatically called if the connection is lost. */
