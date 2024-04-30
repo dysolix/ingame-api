@@ -1,6 +1,6 @@
 {
   "name": "@hasagi/ingame-api",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "scripts": {
     "build": "tsc",
     "cleanup": "rimraf index.js index.d.ts",

@@ -2,37 +2,12 @@ import { TypedEmitter } from "tiny-typed-emitter";
 import axios from "axios";
 import { Agent } from "https";
 
-const RIOT_GAMES_CERTIFICATE = `-----BEGIN CERTIFICATE-----
-MIIEIDCCAwgCCQDJC+QAdVx4UDANBgkqhkiG9w0BAQUFADCB0TELMAkGA1UEBhMC
-VVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFTATBgNVBAcTDFNhbnRhIE1vbmljYTET
-MBEGA1UEChMKUmlvdCBHYW1lczEdMBsGA1UECxMUTG9MIEdhbWUgRW5naW5lZXJp
-bmcxMzAxBgNVBAMTKkxvTCBHYW1lIEVuZ2luZWVyaW5nIENlcnRpZmljYXRlIEF1
-dGhvcml0eTEtMCsGCSqGSIb3DQEJARYeZ2FtZXRlY2hub2xvZ2llc0ByaW90Z2Ft
-ZXMuY29tMB4XDTEzMTIwNDAwNDgzOVoXDTQzMTEyNzAwNDgzOVowgdExCzAJBgNV
-BAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRUwEwYDVQQHEwxTYW50YSBNb25p
-Y2ExEzARBgNVBAoTClJpb3QgR2FtZXMxHTAbBgNVBAsTFExvTCBHYW1lIEVuZ2lu
-ZWVyaW5nMTMwMQYDVQQDEypMb0wgR2FtZSBFbmdpbmVlcmluZyBDZXJ0aWZpY2F0
-ZSBBdXRob3JpdHkxLTArBgkqhkiG9w0BCQEWHmdhbWV0ZWNobm9sb2dpZXNAcmlv
-dGdhbWVzLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKoJemF/
-6PNG3GRJGbjzImTdOo1OJRDI7noRwJgDqkaJFkwv0X8aPUGbZSUzUO23cQcCgpYj
-21ygzKu5dtCN2EcQVVpNtyPuM2V4eEGr1woodzALtufL3Nlyh6g5jKKuDIfeUBHv
-JNyQf2h3Uha16lnrXmz9o9wsX/jf+jUAljBJqsMeACOpXfuZy+YKUCxSPOZaYTLC
-y+0GQfiT431pJHBQlrXAUwzOmaJPQ7M6mLfsnpHibSkxUfMfHROaYCZ/sbWKl3lr
-ZA9DbwaKKfS1Iw0ucAeDudyuqb4JntGU/W0aboKA0c3YB02mxAM4oDnqseuKV/CX
-8SQAiaXnYotuNXMCAwEAATANBgkqhkiG9w0BAQUFAAOCAQEAf3KPmddqEqqC8iLs
-lcd0euC4F5+USp9YsrZ3WuOzHqVxTtX3hR1scdlDXNvrsebQZUqwGdZGMS16ln3k
-WObw7BbhU89tDNCN7Lt/IjT4MGRYRE+TmRc5EeIXxHkQ78bQqbmAI3GsW+7kJsoO
-q3DdeE+M+BUJrhWorsAQCgUyZO166SAtKXKLIcxa+ddC49NvMQPJyzm3V+2b1roP
-SvD2WV8gRYUnGmy/N0+u6ANq5EsbhZ548zZc+BI4upsWChTLyxt2RxR7+uGlS1+5
-EcGfKZ+g024k/J32XP4hdho7WYAS2xMiV83CfLR/MNi8oSMaVQTdKD8cpgiWJk3L
-XWehWA==
------END CERTIFICATE-----`;
+enum Team {
+    Blue = "ORDER",
+    Red = "CHAOS"
+}
 
-const axiosInstance = axios.create({
-    baseURL: "https://localhost:2999",
-    httpsAgent: new Agent({ ca: RIOT_GAMES_CERTIFICATE })
-});
-
+type BooleanString = "True" | "False";
 
 namespace IngameAPI {
     export type LocalPlayerAbilities = {
@@ -197,7 +172,7 @@ namespace IngameAPI {
         gameData: GameStats
     }
 
-    export type Event = (GameStartEvent | MinionsSpawningEvent | FirstBrickEvent | TurretKilledEvent | InhibKilledEvent | InhibRespawnedEvent | DragonKillEvent | HordeKillEvent | HeraldKillEvent | BaronKillEvent | ChampionKillEvent | MultikillEvent | AceEvent | GameEndEvent)
+    export type Event = (GameStartEvent | MinionsSpawningEvent | FirstBloodEvent | FirstBrickEvent | TurretKilledEvent | InhibKilledEvent | InhibRespawnedEvent | DragonKillEvent | HordeKillEvent | HeraldKillEvent | BaronKillEvent | ChampionKillEvent | MultikillEvent | AceEvent | GameEndEvent)
 
     export type EventBase = {
         EventID: number;
@@ -210,6 +185,11 @@ namespace IngameAPI {
 
     export type MinionsSpawningEvent = {
         EventName: "MinionsSpawning"
+    } & EventBase
+
+    export type FirstBloodEvent = {
+        EventName: "FirstBlood",
+        Recipient: string
     } & EventBase
 
     /** First turret destroyed */
@@ -239,30 +219,30 @@ namespace IngameAPI {
 
     export type DragonKillEvent = {
         EventName: "DragonKill",
-        // "Fire", ... Earth Water Air Hextech Chemtech Elder
+        /** "Fire", "Earth", "Water", "Air", "Hextech", "Chemtech", "Elder" */
         DragonType: "Fire" | "Earth" | "Water" | "Air" | "Hextech" | "Chemtech" | "Elder",
-        Stolen: "False" | "True",
+        Stolen: BooleanString
         KillerName: string,
         Assisters: string[]
     } & EventBase
 
     export type HordeKillEvent = {
         EventName: "HordeKill",
-        Stolen: "False" | "True",
+        Stolen: BooleanString
         KillerName: string,
         Assisters: string[]
     } & EventBase
 
     export type HeraldKillEvent = {
         EventName: "HeraldKill",
-        Stolen: "False" | "True",
+        Stolen: BooleanString
         KillerName: string,
         Assisters: string[]
     } & EventBase
 
     export type BaronKillEvent = {
         EventName: "BaronKill",
-        Stolen: "False" | "True",
+        Stolen: BooleanString
         KillerName: string,
         Assisters: string[]
     } & EventBase
@@ -284,7 +264,7 @@ namespace IngameAPI {
         EventName: "Ace",
         Acer: string,
         /** "ORDER" (Blue) or "CHAOS" (Red) */
-        AcingTeam: "ORDER" | "CHAOS"
+        AcingTeam: Team
     } & EventBase
 
     export type GameEndEvent = {
@@ -292,6 +272,37 @@ namespace IngameAPI {
         Result: string
     } & EventBase
 }
+
+const RIOT_GAMES_CERTIFICATE = `-----BEGIN CERTIFICATE-----
+MIIEIDCCAwgCCQDJC+QAdVx4UDANBgkqhkiG9w0BAQUFADCB0TELMAkGA1UEBhMC
+VVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFTATBgNVBAcTDFNhbnRhIE1vbmljYTET
+MBEGA1UEChMKUmlvdCBHYW1lczEdMBsGA1UECxMUTG9MIEdhbWUgRW5naW5lZXJp
+bmcxMzAxBgNVBAMTKkxvTCBHYW1lIEVuZ2luZWVyaW5nIENlcnRpZmljYXRlIEF1
+dGhvcml0eTEtMCsGCSqGSIb3DQEJARYeZ2FtZXRlY2hub2xvZ2llc0ByaW90Z2Ft
+ZXMuY29tMB4XDTEzMTIwNDAwNDgzOVoXDTQzMTEyNzAwNDgzOVowgdExCzAJBgNV
+BAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRUwEwYDVQQHEwxTYW50YSBNb25p
+Y2ExEzARBgNVBAoTClJpb3QgR2FtZXMxHTAbBgNVBAsTFExvTCBHYW1lIEVuZ2lu
+ZWVyaW5nMTMwMQYDVQQDEypMb0wgR2FtZSBFbmdpbmVlcmluZyBDZXJ0aWZpY2F0
+ZSBBdXRob3JpdHkxLTArBgkqhkiG9w0BCQEWHmdhbWV0ZWNobm9sb2dpZXNAcmlv
+dGdhbWVzLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKoJemF/
+6PNG3GRJGbjzImTdOo1OJRDI7noRwJgDqkaJFkwv0X8aPUGbZSUzUO23cQcCgpYj
+21ygzKu5dtCN2EcQVVpNtyPuM2V4eEGr1woodzALtufL3Nlyh6g5jKKuDIfeUBHv
+JNyQf2h3Uha16lnrXmz9o9wsX/jf+jUAljBJqsMeACOpXfuZy+YKUCxSPOZaYTLC
+y+0GQfiT431pJHBQlrXAUwzOmaJPQ7M6mLfsnpHibSkxUfMfHROaYCZ/sbWKl3lr
+ZA9DbwaKKfS1Iw0ucAeDudyuqb4JntGU/W0aboKA0c3YB02mxAM4oDnqseuKV/CX
+8SQAiaXnYotuNXMCAwEAATANBgkqhkiG9w0BAQUFAAOCAQEAf3KPmddqEqqC8iLs
+lcd0euC4F5+USp9YsrZ3WuOzHqVxTtX3hR1scdlDXNvrsebQZUqwGdZGMS16ln3k
+WObw7BbhU89tDNCN7Lt/IjT4MGRYRE+TmRc5EeIXxHkQ78bQqbmAI3GsW+7kJsoO
+q3DdeE+M+BUJrhWorsAQCgUyZO166SAtKXKLIcxa+ddC49NvMQPJyzm3V+2b1roP
+SvD2WV8gRYUnGmy/N0+u6ANq5EsbhZ548zZc+BI4upsWChTLyxt2RxR7+uGlS1+5
+EcGfKZ+g024k/J32XP4hdho7WYAS2xMiV83CfLR/MNi8oSMaVQTdKD8cpgiWJk3L
+XWehWA==
+-----END CERTIFICATE-----`;
+
+const axiosInstance = axios.create({
+    baseURL: "https://localhost:2999",
+    httpsAgent: new Agent({ ca: RIOT_GAMES_CERTIFICATE })
+});
 
 let eventAPIInterval: NodeJS.Timeout | null = null
 let consecutiveErrors = 0;
@@ -410,13 +421,14 @@ function onLiveClientEvent(event: IngameAPI.Event) {
 }
 
 function extractStructureDataFromName(name: string) {
-    const [_type, _team, _lane] = name.split("_");
+    const [_type, _team, _lane, _turretPos] = name.split("_");
 
     return {
         name,
         type: _type === "Barracks" ? "Inhibitor" : _type,
         team: _team === "T1" ? "Blue" : "Red",
-        lane: _lane[0] === "L" ? "Top" : _lane[0] === "C" ? "Middle" : "Bottom"
+        lane: _lane[0] === "L" ? "Top" : _lane[0] === "C" ? "Middle" : "Bottom",
+        position: _type === "Barracks" ? _lane[1] : _turretPos ?? -1
     } as { name: string, type: "Turret" | "Inhibitor", team: "Blue" | "Red", lane: "Top" | "Middle" | "Bottom" }
 }
 
