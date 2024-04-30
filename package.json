@@ -1,0 +1,27 @@
+{
+  "name": "@hasagi/ingame-api",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "tsc",
+    "cleanup": "rimraf index.js index.d.ts",
+    "pub": "npm run build && npm publish --access public && npm run cleanup"
+  },
+  "keywords": [
+    "hasagi"
+  ],
+  "author": "dysolix",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "tiny-typed-emitter": "^2.1.0"
+  },
+  "type": "commonjs",
+  "exports": {
+    ".": "./index.js"
+  },
+  "types": "./index.d.ts",
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "rimraf": "^5.0.5"
+  }
+}
