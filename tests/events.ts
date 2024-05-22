@@ -17,5 +17,13 @@ IngameAPI.on("champion-killed", (event) => console.log("Champion killed", event)
 IngameAPI.on("multikill", (event) => console.log("Multikill", event));
 IngameAPI.on("ace", (event) => console.log("Ace", event));
 IngameAPI.on("game-ended", (event) => console.log("Game ended", event));
+IngameAPI.on("error", (event) => console.log("Error", event));
 
-IngameAPI.startEventAPI();
+IngameAPI.startEventAPI().then(async () => {
+    const localPlayerName = await IngameAPI.getLiveClientActivePlayerSummonerName();
+    IngameAPI.on("champion-killed", ev => {
+        if (localPlayerName?.startsWith(ev.VictimName)) {
+            console.log("You died");
+        }
+    })
+});
