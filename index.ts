@@ -308,7 +308,7 @@ XWehWA==
 -----END CERTIFICATE-----`;
 
 const axiosInstance = axios.create({
-    baseURL: "https://localhost:2999",
+    baseURL: "https://127.0.0.1:2999",
     httpsAgent: new Agent({ ca: RIOT_GAMES_CERTIFICATE })
 });
 
