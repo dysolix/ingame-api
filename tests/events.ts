@@ -19,8 +19,8 @@ IngameAPI.on("ace", (event) => console.log("Ace", event));
 IngameAPI.on("game-ended", (event) => console.log("Game ended", event));
 IngameAPI.on("error", (event) => console.log("Error", event));
 
-IngameAPI.startEventAPI().then(async () => {
-    const localPlayerName = await IngameAPI.getLiveClientActivePlayerSummonerName();
+IngameAPI.startEventAPI({ timeout: 60000, pollIntervalMs: 2500 }).then(async () => {
+    const localPlayerName = await IngameAPI.getActivePlayerRiotId();
     IngameAPI.on("champion-killed", ev => {
         if (localPlayerName?.startsWith(ev.VictimName)) {
             console.log("You died");
