@@ -339,13 +339,27 @@ async function startEventAPI(options?: { timeout?: number; pollIntervalMs?: numb
     isEventAPIRunning = false; throw err;
   });
   EVENT_EMITTER.emit("started");
-  eventAPIInterval = setInterval(async () => {
+
+  const pollIntervalMs = options?.pollIntervalMs ?? 1000;
+
+  // Self-scheduling loop: the next poll is only queued once the current one
+  // resolves, so a slow getEvents() can never overlap with the following tick.
+  // (With setInterval, overlapping ticks both dedupe against `events` before
+  // either appends via onLiveClientEvent, double-emitting and reordering.)
+  const tick = async () => {
     const liveClientEvents = await getEvents();
+
+    // Stopped (or restarted) while the request was in flight — drop this result.
+    if (!isEventAPIRunning)
+      return;
+
     if (liveClientEvents === null) {
       consecutiveErrors++;
       EVENT_EMITTER.emit("error");
-      if (consecutiveErrors >= 3)
+      if (consecutiveErrors >= 3) {
         stopEventAPI();
+        return;
+      }
     } else {
       liveClientEvents.Events
         .filter(e => !events.some(ev => ev.EventID === e.EventID))
@@ -354,13 +368,19 @@ async function startEventAPI(options?: { timeout?: number; pollIntervalMs?: numb
 
       consecutiveErrors = 0;
     }
-  }, options?.pollIntervalMs ?? 1000);
+
+    // Only reschedule while still running (stopEventAPI clears the flag).
+    if (isEventAPIRunning)
+      eventAPIInterval = setTimeout(tick, pollIntervalMs);
+  };
+
+  eventAPIInterval = setTimeout(tick, pollIntervalMs);
 }
 
 /** Can be called to stop the Event API. Automatically called if the connection is lost. */
 function stopEventAPI() {
   if (eventAPIInterval !== null) {
-    clearInterval(eventAPIInterval);
+    clearTimeout(eventAPIInterval);
     eventAPIInterval = null;
   }
 
