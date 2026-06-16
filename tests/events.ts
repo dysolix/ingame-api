@@ -1,4 +1,4 @@
-import IngameAPI from "../index.js";
+import { IngameAPI } from "../index";
 
 IngameAPI.on("started", () => console.log("Game started"));
 IngameAPI.on("stopped", () => console.log("Game stopped"));
