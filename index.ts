@@ -317,6 +317,14 @@ let consecutiveErrors = 0;
 let events: IngameAPI.Event[] = [];
 
 let isEventAPIRunning = false;
+/**
+ * Monotonic token identifying the current start/stop cycle of the event API. Every
+ * {@link startEventAPI} bumps it and its poll loop captures it; {@link stopEventAPI} bumps it too.
+ * A poll whose captured token no longer matches belongs to a superseded cycle (the API was stopped,
+ * or stopped and restarted, while a request was in flight) and bails out without emitting events or
+ * rescheduling — so a slow getEvents() straddling a restart can't spawn a second overlapping loop.
+ */
+let eventAPIGeneration = 0;
 
 /**
  * Waits for the live client to be available and starts the event api.
@@ -329,6 +337,9 @@ async function startEventAPI(options?: { timeout?: number; pollIntervalMs?: numb
     return;
 
   isEventAPIRunning = true;
+  // Claim this start/stop cycle. A later stop (or stop+restart) bumps the token, after which the
+  // poll loop below short-circuits this (now superseded) cycle so it can't double-emit or reschedule.
+  const myGen = ++eventAPIGeneration;
 
   consecutiveErrors = 0;
   events = [];
@@ -349,8 +360,10 @@ async function startEventAPI(options?: { timeout?: number; pollIntervalMs?: numb
   const tick = async () => {
     const liveClientEvents = await getEvents();
 
-    // Stopped (or restarted) while the request was in flight — drop this result.
-    if (!isEventAPIRunning)
+    // Stopped (or restarted) while the request was in flight — this cycle was superseded, so drop
+    // the result and let the current cycle (if any) own the state. The boolean alone is insufficient:
+    // a stop+restart would flip isEventAPIRunning back to true and let this stale poll through.
+    if (eventAPIGeneration !== myGen)
       return;
 
     if (liveClientEvents === null) {
@@ -369,8 +382,8 @@ async function startEventAPI(options?: { timeout?: number; pollIntervalMs?: numb
       consecutiveErrors = 0;
     }
 
-    // Only reschedule while still running (stopEventAPI clears the flag).
-    if (isEventAPIRunning)
+    // Only reschedule while this cycle is still the current one (stopEventAPI bumps the token).
+    if (eventAPIGeneration === myGen)
       eventAPIInterval = setTimeout(tick, pollIntervalMs);
   };
 
@@ -383,6 +396,9 @@ function stopEventAPI() {
     clearTimeout(eventAPIInterval);
     eventAPIInterval = null;
   }
+
+  // Invalidate the current cycle so any poll still in flight bails out instead of rescheduling.
+  eventAPIGeneration++;
 
   consecutiveErrors = 0;
   events = [];
