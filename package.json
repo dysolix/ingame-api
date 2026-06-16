@@ -1,12 +1,13 @@
 {
   "name": "@hasagi/ingame-api",
   "version": "0.2.1",
+  "private": true,
   "scripts": {
-    "build": "tsc",
-    "check:package": "npm run build && publint && attw --pack",
+    "build": "node scripts/prebuild.mjs && tsc && node scripts/postbuild.mjs",
+    "check:package": "npm run build && publint ./dist && attw --pack ./dist",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "pub": "npm run check:package && npm publish --access public"
+    "release": "npm run check:package && cd ./dist && npm publish --access public"
   },
   "keywords": [
     "hasagi"
@@ -20,11 +21,11 @@
   "type": "commonjs",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./index.d.ts",
+      "default": "./index.js"
     }
   },
-  "types": "./dist/index.d.ts",
+  "types": "./index.d.ts",
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.3",
     "@stylistic/eslint-plugin": "^5.10.0",
