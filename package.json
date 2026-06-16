@@ -4,6 +4,8 @@
   "scripts": {
     "build": "tsc",
     "check:package": "npm run build && publint && attw --pack",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "pub": "npm run check:package && npm publish --access public"
   },
   "keywords": [
@@ -25,8 +27,11 @@
   "types": "./dist/index.d.ts",
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.3",
+    "@stylistic/eslint-plugin": "^5.10.0",
     "@types/node": "^20.19.42",
+    "eslint": "^10.5.0",
     "publint": "^0.3.21",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.0"
   }
 }

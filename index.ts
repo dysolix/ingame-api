@@ -3,282 +3,282 @@ import axios from "axios";
 import { Agent } from "https";
 
 enum Team {
-    Blue = "ORDER",
-    Red = "CHAOS"
+  Blue = "ORDER",
+  Red = "CHAOS",
 }
 
 type BooleanString = "True" | "False";
 
 export namespace IngameAPI {
-    export type LocalPlayerAbilities = {
-        Passive: LiveClientPassiveAbility,
-        Q: LiveClientAbility,
-        W: LiveClientAbility,
-        E: LiveClientAbility,
-        R: LiveClientAbility,
-    }
+  export type LocalPlayerAbilities = {
+    Passive: LiveClientPassiveAbility;
+    Q: LiveClientAbility;
+    W: LiveClientAbility;
+    E: LiveClientAbility;
+    R: LiveClientAbility;
+  };
 
-    export type LocalPlayer = {
-        abilities: LocalPlayerAbilities;
-        championStats: LiveClientChampionStats;
-        currentGold: number;
-        fullRunes: LocalPlayerRunes;
-        level: number;
-        /** Same as riotId */
-        summonerName: string;
-        riotId: string;
-        riotIdGameName: string;
-        riotIdTagLine: string;
-        teamRelativeColors: boolean;
-    }
+  export type LocalPlayer = {
+    abilities: LocalPlayerAbilities;
+    championStats: LiveClientChampionStats;
+    currentGold: number;
+    fullRunes: LocalPlayerRunes;
+    level: number;
+    /** Same as riotId */
+    summonerName: string;
+    riotId: string;
+    riotIdGameName: string;
+    riotIdTagLine: string;
+    teamRelativeColors: boolean;
+  };
 
-    export type LocalPlayerRunes = {
-        keystone: LiveClientKeystone;
-        primaryRuneTree: LiveClientRuneTree;
-        secondaryRuneTree: LiveClientRuneTree;
-        generalRunes: LiveClientRuneTree[];
-        statRunes: LiveClientStatRune[];
-    }
+  export type LocalPlayerRunes = {
+    keystone: LiveClientKeystone;
+    primaryRuneTree: LiveClientRuneTree;
+    secondaryRuneTree: LiveClientRuneTree;
+    generalRunes: LiveClientRuneTree[];
+    statRunes: LiveClientStatRune[];
+  };
 
-    export type LiveClientStatRune = {
-        id: number;
-        rawDescription: string;
-    }
+  export type LiveClientStatRune = {
+    id: number;
+    rawDescription: string;
+  };
 
-    export type LiveClientChampionStats = {
-        abilityHaste: number;
-        abilityPower: number;
-        armor: number;
-        armorPenetrationFlat: number;
-        armorPenetrationPercent: number;
-        attackDamage: number;
-        attackRange: number;
-        attackSpeed: number;
-        bonusArmorPenetrationPercent: number;
-        bonusMagicPenetrationPercent: number;
-        cooldownReduction: number;
-        critChance: number;
-        critDamage: number;
-        currentHealth: number;
-        healthRegenRate: number;
-        lifeSteal: number;
-        magicLethality: number;
-        magicPenetrationFlat: number;
-        magicPenetrationPercent: number;
-        magicResist: number;
-        maxHealth: number;
-        moveSpeed: number;
-        physicalLethality: number;
-        resourceMax: number;
-        resourceRegenRate: number;
-        resourceType: string;
-        resourceValue: number;
-        spellVamp: number;
-        tenacity: number;
-    }
+  export type LiveClientChampionStats = {
+    abilityHaste: number;
+    abilityPower: number;
+    armor: number;
+    armorPenetrationFlat: number;
+    armorPenetrationPercent: number;
+    attackDamage: number;
+    attackRange: number;
+    attackSpeed: number;
+    bonusArmorPenetrationPercent: number;
+    bonusMagicPenetrationPercent: number;
+    cooldownReduction: number;
+    critChance: number;
+    critDamage: number;
+    currentHealth: number;
+    healthRegenRate: number;
+    lifeSteal: number;
+    magicLethality: number;
+    magicPenetrationFlat: number;
+    magicPenetrationPercent: number;
+    magicResist: number;
+    maxHealth: number;
+    moveSpeed: number;
+    physicalLethality: number;
+    resourceMax: number;
+    resourceRegenRate: number;
+    resourceType: string;
+    resourceValue: number;
+    spellVamp: number;
+    tenacity: number;
+  };
 
-    export type LiveClientRuneTree = {
-        displayName: string;
-        id: number;
-        rawDescription: string;
-        rawDisplayName: string;
-    }
+  export type LiveClientRuneTree = {
+    displayName: string;
+    id: number;
+    rawDescription: string;
+    rawDisplayName: string;
+  };
 
-    export type LiveClientKeystone = {
-        displayName: string;
-        id: number;
-        rawDescription: string;
-        rawDisplayName: string;
-    }
+  export type LiveClientKeystone = {
+    displayName: string;
+    id: number;
+    rawDescription: string;
+    rawDisplayName: string;
+  };
 
-    export type GameStats = {
-        gameMode: string;
-        gameTime: number;
-        mapName: string;
-        mapNumber: number;
-        mapTerrain: string;
-    }
+  export type GameStats = {
+    gameMode: string;
+    gameTime: number;
+    mapName: string;
+    mapNumber: number;
+    mapTerrain: string;
+  };
 
-    export type Player = {
-        championName: string;
-        isBot: boolean;
-        isDead: boolean;
-        items: PlayerItem[];
-        level: number;
-        position: string;
-        rawChampionName: string;
-        respawnTimer: number;
-        runes: PlayerMainRunes;
-        scores: PlayerScores;
-        skinID: number;
-        summonerName: string;
-        summonerSpells: PlayerSummonerSpells;
-        team: string;
-        riotId: string;
-        riotIdGameName: string;
-        riotIdTagLine: string;
-    }
+  export type Player = {
+    championName: string;
+    isBot: boolean;
+    isDead: boolean;
+    items: PlayerItem[];
+    level: number;
+    position: string;
+    rawChampionName: string;
+    respawnTimer: number;
+    runes: PlayerMainRunes;
+    scores: PlayerScores;
+    skinID: number;
+    summonerName: string;
+    summonerSpells: PlayerSummonerSpells;
+    team: string;
+    riotId: string;
+    riotIdGameName: string;
+    riotIdTagLine: string;
+  };
 
-    export type PlayerMainRunes = {
-        keystone: LiveClientKeystone;
-        primaryRuneTree: LiveClientRuneTree;
-        secondaryRuneTree: LiveClientRuneTree;
-    }
+  export type PlayerMainRunes = {
+    keystone: LiveClientKeystone;
+    primaryRuneTree: LiveClientRuneTree;
+    secondaryRuneTree: LiveClientRuneTree;
+  };
 
-    export type PlayerSummonerSpells = {
-        summonerSpellOne: LiveClientSummonerSpell;
-        summonerSpellTwo: LiveClientSummonerSpell;
-    }
+  export type PlayerSummonerSpells = {
+    summonerSpellOne: LiveClientSummonerSpell;
+    summonerSpellTwo: LiveClientSummonerSpell;
+  };
 
-    export type PlayerItem = {
-        canUse: boolean;
-        consumable: boolean;
-        count: number;
-        displayName: string;
-        itemID: number;
-        price: number;
-        rawDescription: string;
-        rawDisplayName: string;
-        slot: number;
-    }
+  export type PlayerItem = {
+    canUse: boolean;
+    consumable: boolean;
+    count: number;
+    displayName: string;
+    itemID: number;
+    price: number;
+    rawDescription: string;
+    rawDisplayName: string;
+    slot: number;
+  };
 
-    export type LiveClientPassiveAbility = {
-        displayName: string;
-        id: string;
-        rawDescription: string;
-        rawDisplayName: string;
-    }
+  export type LiveClientPassiveAbility = {
+    displayName: string;
+    id: string;
+    rawDescription: string;
+    rawDisplayName: string;
+  };
 
-    export type LiveClientAbility = {
-        abilityLevel: number;
-        displayName: string;
-        id: string;
-        rawDescription: string;
-        rawDisplayName: string;
-    }
+  export type LiveClientAbility = {
+    abilityLevel: number;
+    displayName: string;
+    id: string;
+    rawDescription: string;
+    rawDisplayName: string;
+  };
 
-    export type PlayerScores = {
-        assists: number;
-        creepScore: number;
-        deaths: number;
-        kills: number;
-        wardScore: number;
-    }
+  export type PlayerScores = {
+    assists: number;
+    creepScore: number;
+    deaths: number;
+    kills: number;
+    wardScore: number;
+  };
 
-    export type LiveClientSummonerSpell = {
-        displayName: string;
-        rawDescription: string;
-        rawDisplayName: string;
-    }
+  export type LiveClientSummonerSpell = {
+    displayName: string;
+    rawDescription: string;
+    rawDisplayName: string;
+  };
 
-    export type AllGameData = {
-        activePlayer: LocalPlayer,
-        allPlayers: Player[],
-        events: {
-            Events: Event[]
-        },
-        gameData: GameStats
-    }
+  export type AllGameData = {
+    activePlayer: LocalPlayer;
+    allPlayers: Player[];
+    events: {
+      Events: Event[];
+    };
+    gameData: GameStats;
+  };
 
-    export type Event = (GameStartEvent | MinionsSpawningEvent | FirstBloodEvent | FirstBrickEvent | TurretKilledEvent | InhibKilledEvent | InhibRespawnedEvent | DragonKillEvent | HordeKillEvent | HeraldKillEvent | BaronKillEvent | ChampionKillEvent | MultikillEvent | AceEvent | GameEndEvent)
+  export type Event = (GameStartEvent | MinionsSpawningEvent | FirstBloodEvent | FirstBrickEvent | TurretKilledEvent | InhibKilledEvent | InhibRespawnedEvent | DragonKillEvent | HordeKillEvent | HeraldKillEvent | BaronKillEvent | ChampionKillEvent | MultikillEvent | AceEvent | GameEndEvent);
 
-    export type EventBase = {
-        EventID: number;
-        EventTime: number;
-    }
+  export type EventBase = {
+    EventID: number;
+    EventTime: number;
+  };
 
-    export type GameStartEvent = {
-        EventName: "GameStart"
-    } & EventBase
+  export type GameStartEvent = {
+    EventName: "GameStart";
+  } & EventBase;
 
-    export type MinionsSpawningEvent = {
-        EventName: "MinionsSpawning"
-    } & EventBase
+  export type MinionsSpawningEvent = {
+    EventName: "MinionsSpawning";
+  } & EventBase;
 
-    export type FirstBloodEvent = {
-        EventName: "FirstBlood",
-        Recipient: string
-    } & EventBase
+  export type FirstBloodEvent = {
+    EventName: "FirstBlood";
+    Recipient: string;
+  } & EventBase;
 
-    /** First turret destroyed */
-    export type FirstBrickEvent = {
-        EventName: "FirstBrick",
-        KillerName: string
-    } & EventBase
+  /** First turret destroyed */
+  export type FirstBrickEvent = {
+    EventName: "FirstBrick";
+    KillerName: string;
+  } & EventBase;
 
-    export type TurretKilledEvent = {
-        EventName: "TurretKilled"
-        TurretKilled: string,
-        KillerName: string,
-        Assisters: string[]
-    } & EventBase
+  export type TurretKilledEvent = {
+    EventName: "TurretKilled";
+    TurretKilled: string;
+    KillerName: string;
+    Assisters: string[];
+  } & EventBase;
 
-    export type InhibKilledEvent = {
-        EventName: "InhibKilled",
-        InhibKilled: string,
-        KillerName: string,
-        Assisters: string[]
-    } & EventBase
+  export type InhibKilledEvent = {
+    EventName: "InhibKilled";
+    InhibKilled: string;
+    KillerName: string;
+    Assisters: string[];
+  } & EventBase;
 
-    export type InhibRespawnedEvent = {
-        EventName: "InhibRespawned",
-        InhibRespawned: string
-    } & EventBase
+  export type InhibRespawnedEvent = {
+    EventName: "InhibRespawned";
+    InhibRespawned: string;
+  } & EventBase;
 
-    export type DragonKillEvent = {
-        EventName: "DragonKill",
-        /** "Fire", "Earth", "Water", "Air", "Hextech", "Chemtech", "Elder" */
-        DragonType: "Fire" | "Earth" | "Water" | "Air" | "Hextech" | "Chemtech" | "Elder",
-        Stolen: BooleanString
-        KillerName: string,
-        Assisters: string[]
-    } & EventBase
+  export type DragonKillEvent = {
+    EventName: "DragonKill";
+    /** "Fire", "Earth", "Water", "Air", "Hextech", "Chemtech", "Elder" */
+    DragonType: "Fire" | "Earth" | "Water" | "Air" | "Hextech" | "Chemtech" | "Elder";
+    Stolen: BooleanString;
+    KillerName: string;
+    Assisters: string[];
+  } & EventBase;
 
-    export type HordeKillEvent = {
-        EventName: "HordeKill",
-        Stolen: BooleanString
-        KillerName: string,
-        Assisters: string[]
-    } & EventBase
+  export type HordeKillEvent = {
+    EventName: "HordeKill";
+    Stolen: BooleanString;
+    KillerName: string;
+    Assisters: string[];
+  } & EventBase;
 
-    export type HeraldKillEvent = {
-        EventName: "HeraldKill",
-        Stolen: BooleanString
-        KillerName: string,
-        Assisters: string[]
-    } & EventBase
+  export type HeraldKillEvent = {
+    EventName: "HeraldKill";
+    Stolen: BooleanString;
+    KillerName: string;
+    Assisters: string[];
+  } & EventBase;
 
-    export type BaronKillEvent = {
-        EventName: "BaronKill",
-        Stolen: BooleanString
-        KillerName: string,
-        Assisters: string[]
-    } & EventBase
+  export type BaronKillEvent = {
+    EventName: "BaronKill";
+    Stolen: BooleanString;
+    KillerName: string;
+    Assisters: string[];
+  } & EventBase;
 
-    export type ChampionKillEvent = {
-        EventName: "ChampionKill",
-        KillerName: string,
-        VictimName: string,
-        Assisters: string[]
-    } & EventBase
+  export type ChampionKillEvent = {
+    EventName: "ChampionKill";
+    KillerName: string;
+    VictimName: string;
+    Assisters: string[];
+  } & EventBase;
 
-    export type MultikillEvent = {
-        EventName: "Multikill",
-        KillerName: string,
-        KillStreak: number
-    } & EventBase
+  export type MultikillEvent = {
+    EventName: "Multikill";
+    KillerName: string;
+    KillStreak: number;
+  } & EventBase;
 
-    export type AceEvent = {
-        EventName: "Ace",
-        Acer: string,
-        /** "ORDER" (Blue) or "CHAOS" (Red) */
-        AcingTeam: Team
-    } & EventBase
+  export type AceEvent = {
+    EventName: "Ace";
+    Acer: string;
+    /** "ORDER" (Blue) or "CHAOS" (Red) */
+    AcingTeam: Team;
+  } & EventBase;
 
-    export type GameEndEvent = {
-        EventName: "GameEnd",
-        Result: string
-    } & EventBase
+  export type GameEndEvent = {
+    EventName: "GameEnd";
+    Result: string;
+  } & EventBase;
 }
 
 const RIOT_GAMES_CERTIFICATE = `-----BEGIN CERTIFICATE-----
@@ -308,18 +308,15 @@ XWehWA==
 -----END CERTIFICATE-----`;
 
 const axiosInstance = axios.create({
-    baseURL: "https://127.0.0.1:2999",
-    httpsAgent: new Agent({ ca: RIOT_GAMES_CERTIFICATE })
+  baseURL: "https://127.0.0.1:2999",
+  httpsAgent: new Agent({ ca: RIOT_GAMES_CERTIFICATE }),
 });
 
-let eventAPIInterval: NodeJS.Timeout | null = null
+let eventAPIInterval: NodeJS.Timeout | null = null;
 let consecutiveErrors = 0;
 let events: IngameAPI.Event[] = [];
-let playerEventEmitters: { [riotId: string]: TypedEmitter<{
 
-}>} = {}
-
-var isEventAPIRunning = false;
+let isEventAPIRunning = false;
 
 /**
  * Waits for the live client to be available and starts the event api.
@@ -327,269 +324,272 @@ var isEventAPIRunning = false;
  * @param options.pollIntervalMs The interval in milliseconds to poll the live client for new events. Default is 1000ms.
  * @param options.cert The certificate to use for the connection. If not provided, the default Riot Games certificate is used. If null is provided, certificate validation is disabled.
  */
-async function startEventAPI(options?: { timeout?: number, pollIntervalMs?: number, cert?: string | null }) {
-    if (isEventAPIRunning)
-        return;
+async function startEventAPI(options?: { timeout?: number; pollIntervalMs?: number; cert?: string | null }) {
+  if (isEventAPIRunning)
+    return;
 
-    isEventAPIRunning = true;
+  isEventAPIRunning = true;
 
-    consecutiveErrors = 0;
-    events = [];
-    eventAPIInterval = null;
-    axiosInstance.defaults.httpsAgent = new Agent({ ca: options?.cert !== null ? options?.cert ?? RIOT_GAMES_CERTIFICATE : undefined, rejectUnauthorized: options?.cert !== null });
+  consecutiveErrors = 0;
+  events = [];
+  eventAPIInterval = null;
+  axiosInstance.defaults.httpsAgent = new Agent({ ca: options?.cert !== null ? options?.cert ?? RIOT_GAMES_CERTIFICATE : undefined, rejectUnauthorized: options?.cert !== null });
 
-    await waitForLiveClientAvailability(options?.timeout).catch((err) => { isEventAPIRunning = false; throw err; });
-    EVENT_EMITTER.emit("started");
-    eventAPIInterval = setInterval(async () => {
-        const liveClientEvents = await getEvents();
-        if (liveClientEvents === null) {
-            consecutiveErrors++;
-            if (consecutiveErrors >= 3)
-                stopEventAPI();
-        } else {
-            liveClientEvents.Events
-                .filter(e => !events.some(ev => ev.EventID === e.EventID))
-                .sort((a, b) => a.EventTime - b.EventTime)
-                .forEach(e => onLiveClientEvent(e));
+  await waitForLiveClientAvailability(options?.timeout).catch((err) => {
+    isEventAPIRunning = false; throw err;
+  });
+  EVENT_EMITTER.emit("started");
+  eventAPIInterval = setInterval(async () => {
+    const liveClientEvents = await getEvents();
+    if (liveClientEvents === null) {
+      consecutiveErrors++;
+      EVENT_EMITTER.emit("error");
+      if (consecutiveErrors >= 3)
+        stopEventAPI();
+    } else {
+      liveClientEvents.Events
+        .filter(e => !events.some(ev => ev.EventID === e.EventID))
+        .sort((a, b) => a.EventTime - b.EventTime)
+        .forEach(e => onLiveClientEvent(e));
 
-            consecutiveErrors = 0;
-        }
-    }, options?.pollIntervalMs ?? 1000);
+      consecutiveErrors = 0;
+    }
+  }, options?.pollIntervalMs ?? 1000);
 }
 
 /** Can be called to stop the Event API. Automatically called if the connection is lost. */
 function stopEventAPI() {
-    if (eventAPIInterval !== null) {
-        clearInterval(eventAPIInterval);
-        eventAPIInterval = null;
-    }
+  if (eventAPIInterval !== null) {
+    clearInterval(eventAPIInterval);
+    eventAPIInterval = null;
+  }
 
-    consecutiveErrors = 0;
-    events = [];
+  consecutiveErrors = 0;
+  events = [];
 
-    isEventAPIRunning = false;
-    EVENT_EMITTER.emit("stopped");
+  isEventAPIRunning = false;
+  EVENT_EMITTER.emit("stopped");
 }
 
 const EVENT_EMITTER = new TypedEmitter<{
-    "started": () => void,
-    "stopped": () => void,
-    "event": (event: IngameAPI.Event) => void,
-    "error": (error?: any) => void,
-    "game-started": (event: IngameAPI.GameStartEvent) => void,
-    "minions-spawning": (event: IngameAPI.MinionsSpawningEvent) => void,
-    "first-turret-destroyed": (event: IngameAPI.FirstBrickEvent) => void,
-    "turret-destroyed": (event: IngameAPI.TurretKilledEvent & { StructureData: ReturnType<typeof extractStructureDataFromName> }) => void,
-    "inhibitor-destroyed": (event: IngameAPI.InhibKilledEvent & { StructureData: ReturnType<typeof extractStructureDataFromName> }) => void,
-    "inhibitor-respawned": (event: IngameAPI.InhibRespawnedEvent & { StructureData: ReturnType<typeof extractStructureDataFromName> }) => void,
-    "dragon-killed": (event: IngameAPI.DragonKillEvent) => void,
-    "void-grub-killed": (event: IngameAPI.HordeKillEvent) => void,
-    "herald-killed": (event: IngameAPI.HeraldKillEvent) => void,
-    "baron-killed": (event: IngameAPI.BaronKillEvent) => void,
-    "champion-killed": (event: IngameAPI.ChampionKillEvent) => void,
-    "multikill": (event: IngameAPI.MultikillEvent) => void,
-    "ace": (event: IngameAPI.AceEvent) => void,
-    "game-ended": (event: IngameAPI.GameEndEvent) => void,
+  "started": () => void;
+  "stopped": () => void;
+  "event": (event: IngameAPI.Event) => void;
+  "error": (error?: any) => void;
+  "game-started": (event: IngameAPI.GameStartEvent) => void;
+  "minions-spawning": (event: IngameAPI.MinionsSpawningEvent) => void;
+  "first-turret-destroyed": (event: IngameAPI.FirstBrickEvent) => void;
+  "turret-destroyed": (event: IngameAPI.TurretKilledEvent & { StructureData: ReturnType<typeof extractStructureDataFromName> }) => void;
+  "inhibitor-destroyed": (event: IngameAPI.InhibKilledEvent & { StructureData: ReturnType<typeof extractStructureDataFromName> }) => void;
+  "inhibitor-respawned": (event: IngameAPI.InhibRespawnedEvent & { StructureData: ReturnType<typeof extractStructureDataFromName> }) => void;
+  "dragon-killed": (event: IngameAPI.DragonKillEvent) => void;
+  "void-grub-killed": (event: IngameAPI.HordeKillEvent) => void;
+  "herald-killed": (event: IngameAPI.HeraldKillEvent) => void;
+  "baron-killed": (event: IngameAPI.BaronKillEvent) => void;
+  "champion-killed": (event: IngameAPI.ChampionKillEvent) => void;
+  "multikill": (event: IngameAPI.MultikillEvent) => void;
+  "ace": (event: IngameAPI.AceEvent) => void;
+  "game-ended": (event: IngameAPI.GameEndEvent) => void;
 }>();
 
 function onLiveClientEvent(event: IngameAPI.Event) {
-    events.push(event);
+  events.push(event);
 
-    EVENT_EMITTER.emit("event", event);
-    switch (event.EventName) {
-        case "GameStart":
-            EVENT_EMITTER.emit("game-started", event);
-            break;
-        case "MinionsSpawning":
-            EVENT_EMITTER.emit("minions-spawning", event);
-            break;
-        case "FirstBrick":
-            EVENT_EMITTER.emit("first-turret-destroyed", event);
-            break;
-        case "TurretKilled":
-            EVENT_EMITTER.emit("turret-destroyed", { ...event, StructureData: extractStructureDataFromName(event.TurretKilled) });
-            break;
-        case "InhibKilled":
-            EVENT_EMITTER.emit("inhibitor-destroyed", { ...event, StructureData: extractStructureDataFromName(event.InhibKilled) });
-            break;
-        case "InhibRespawned":
-            EVENT_EMITTER.emit("inhibitor-respawned", { ...event, StructureData: extractStructureDataFromName(event.InhibRespawned) });
-            break;
-        case "DragonKill":
-            EVENT_EMITTER.emit("dragon-killed", event);
-            break;
-        case "HordeKill":
-            EVENT_EMITTER.emit("void-grub-killed", event);
-            break;
-        case "HeraldKill":
-            EVENT_EMITTER.emit("herald-killed", event);
-            break;
-        case "BaronKill":
-            EVENT_EMITTER.emit("baron-killed", event);
-            break;
-        case "ChampionKill":
-            EVENT_EMITTER.emit("champion-killed", event);
-            break;
-        case "Multikill":
-            EVENT_EMITTER.emit("multikill", event);
-            break;
-        case "Ace":
-            EVENT_EMITTER.emit("ace", event);
-            break;
-        case "GameEnd":
-            EVENT_EMITTER.emit("game-ended", event);
-            break;
-    }
-}
-
-function getPlayerEventEmitter(riotId: string) {
-    if (playerEventEmitters[riotId] === undefined)
-        playerEventEmitters[riotId] = new TypedEmitter();
-
-    return playerEventEmitters[riotId];
+  EVENT_EMITTER.emit("event", event);
+  switch (event.EventName) {
+    case "GameStart":
+      EVENT_EMITTER.emit("game-started", event);
+      break;
+    case "MinionsSpawning":
+      EVENT_EMITTER.emit("minions-spawning", event);
+      break;
+    case "FirstBrick":
+      EVENT_EMITTER.emit("first-turret-destroyed", event);
+      break;
+    case "TurretKilled":
+      EVENT_EMITTER.emit("turret-destroyed", { ...event, StructureData: extractStructureDataFromName(event.TurretKilled) });
+      break;
+    case "InhibKilled":
+      EVENT_EMITTER.emit("inhibitor-destroyed", { ...event, StructureData: extractStructureDataFromName(event.InhibKilled) });
+      break;
+    case "InhibRespawned":
+      EVENT_EMITTER.emit("inhibitor-respawned", { ...event, StructureData: extractStructureDataFromName(event.InhibRespawned) });
+      break;
+    case "DragonKill":
+      EVENT_EMITTER.emit("dragon-killed", event);
+      break;
+    case "HordeKill":
+      EVENT_EMITTER.emit("void-grub-killed", event);
+      break;
+    case "HeraldKill":
+      EVENT_EMITTER.emit("herald-killed", event);
+      break;
+    case "BaronKill":
+      EVENT_EMITTER.emit("baron-killed", event);
+      break;
+    case "ChampionKill":
+      EVENT_EMITTER.emit("champion-killed", event);
+      break;
+    case "Multikill":
+      EVENT_EMITTER.emit("multikill", event);
+      break;
+    case "Ace":
+      EVENT_EMITTER.emit("ace", event);
+      break;
+    case "GameEnd":
+      EVENT_EMITTER.emit("game-ended", event);
+      break;
+  }
 }
 
 function extractStructureDataFromName(name: string) {
-    const [_type, _team, _lane, _turretPos] = name.split("_");
+  const [
+    _type,
+    _team,
+    _lane,
+    _turretPos,
+  ] = name.split("_");
 
-    return {
-        name,
-        type: _type === "Barracks" ? "Inhibitor" : _type,
-        team: _team === "T1" ? "Blue" : "Red",
-        lane: _lane[0] === "L" ? "Top" : _lane[0] === "C" ? "Middle" : "Bottom",
-        position: _type === "Barracks" ? _lane[1] : _turretPos ?? -1
-    } as { name: string, type: "Turret" | "Inhibitor", team: "Blue" | "Red", lane: "Top" | "Middle" | "Bottom" }
+  return {
+    name,
+    type: _type === "Barracks" ? "Inhibitor" : _type,
+    team: _team === "T1" ? "Blue" : "Red",
+    lane: _lane[0] === "L" ? "Top" : _lane[0] === "C" ? "Middle" : "Bottom",
+    position: _type === "Barracks" ? _lane[1] : _turretPos ?? -1,
+  } as { name: string; type: "Turret" | "Inhibitor"; team: "Blue" | "Red"; lane: "Top" | "Middle" | "Bottom" };
 }
 
 const delay = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
 async function waitForLiveClientAvailability(timeout = 30000) {
-    let elapsedTime = 0;
-    while (elapsedTime < timeout) {
-        let summonerName = await getActivePlayerRiotId();
-        if (summonerName !== null)
-            return;
+  let elapsedTime = 0;
+  while (elapsedTime < timeout) {
+    let summonerName = await getActivePlayerRiotId();
+    if (summonerName !== null)
+      return;
 
-        elapsedTime += 1000;
-        if (elapsedTime < timeout)
-            await delay(1000);
-    }
+    elapsedTime += 1000;
+    if (elapsedTime < timeout)
+      await delay(1000);
+  }
 
-    throw new Error(`Ingame API not available after ${timeout}ms.`);
+  throw new Error(`Ingame API not available after ${timeout}ms.`);
 }
 
 axiosInstance.interceptors.response.use(res => res, async err => {
-    return Promise.reject(err); // I have no idea why this is needed, but it is, at least last time I checked
+  return Promise.reject(err); // I have no idea why this is needed, but it is, at least last time I checked
 });
 
 async function getActivePlayerRiotId() {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayername" }).then(res => res.data as string, err => { return null; });
+  return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayername" }).then(res => res.data as string, () => {
+    return null;
+  });
 }
 
 async function getAllGameData(): Promise<IngameAPI.AllGameData | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/allgamedata" }).then(res => res.data, err => {   
-        return null;
-    }) 
+  return await axiosInstance({ method: "get", url: "/liveclientdata/allgamedata" }).then(res => res.data, () => {
+    return null;
+  });
 }
 
 async function getActivePlayer(): Promise<IngameAPI.LocalPlayer | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayer" }).then(res => res.data, err => {        
-        return null;
-    })
+  return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayer" }).then(res => res.data, () => {
+    return null;
+  });
 }
 
 async function getActivePlayerAbilities(): Promise<IngameAPI.LocalPlayerAbilities | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayerabilities" }).then(res => res.data, err => {        
-        return null;
-    })
+  return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayerabilities" }).then(res => res.data, () => {
+    return null;
+  });
 }
 
 async function getActivePlayerRunes(): Promise<IngameAPI.LocalPlayerRunes | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayerrunes" }).then(res => res.data, err => {        
-        return null;
-    })
+  return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayerrunes" }).then(res => res.data, () => {
+    return null;
+  });
 }
 
 async function getPlayerList(): Promise<IngameAPI.Player[] | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/playerlist" }).then(res => res.data, err => {        
-        return null;
-    })
+  return await axiosInstance({ method: "get", url: "/liveclientdata/playerlist" }).then(res => res.data, () => {
+    return null;
+  });
 }
 
 /**
  * @param riotId The full Riot ID of the player or just the name (not recommended since there could be duplicate names)
  */
 async function getPlayerScores(riotId: string): Promise<IngameAPI.PlayerScores | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/playerscores?riotId=" + encodeURIComponent(riotId) }).then(res => res.data, err => {        
-        return null;
-    })
+  return await axiosInstance({ method: "get", url: "/liveclientdata/playerscores?riotId=" + encodeURIComponent(riotId) }).then(res => res.data, () => {
+    return null;
+  });
 }
 
 /**
  * @param riotId The full Riot ID of the player or just the name (not recommended since there could be duplicate names)
  */
 async function getPlayerSummonerSpells(riotId: string): Promise<IngameAPI.PlayerSummonerSpells | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/playersummonerspells?riotId=" + encodeURIComponent(riotId) }).then(res => res.data, err => {       
-        return null;
-    })
+  return await axiosInstance({ method: "get", url: "/liveclientdata/playersummonerspells?riotId=" + encodeURIComponent(riotId) }).then(res => res.data, () => {
+    return null;
+  });
 }
 
 /**
  * @param riotId The full Riot ID of the player or just the name (not recommended since there could be duplicate names)
  */
 async function getPlayerMainRunes(riotId: string): Promise<IngameAPI.PlayerMainRunes | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/playermainrunes?riotId=" + encodeURIComponent(riotId) }).then(res => res.data, err => {        
-        return null;
-    })
+  return await axiosInstance({ method: "get", url: "/liveclientdata/playermainrunes?riotId=" + encodeURIComponent(riotId) }).then(res => res.data, () => {
+    return null;
+  });
 }
 
 /**
  * @param riotId The full Riot ID of the player or just the name (not recommended since there could be duplicate names)
  */
 async function getPlayerItems(riotId: string): Promise<IngameAPI.PlayerItem[] | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/playeritems?summonerName=" + encodeURIComponent(riotId) }).then(res => res.data, err => {        
-        return null;
-    })
+  return await axiosInstance({ method: "get", url: "/liveclientdata/playeritems?riotId=" + encodeURIComponent(riotId) }).then(res => res.data, () => {
+    return null;
+  });
 }
 
 async function getEvents(): Promise<{ Events: IngameAPI.Event[] } | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/eventdata" }).then(res => res.data, err => {        
-        return null;
-    })
+  return await axiosInstance({ method: "get", url: "/liveclientdata/eventdata" }).then(res => res.data, () => {
+    return null;
+  });
 }
 
 async function getGameStats(): Promise<IngameAPI.GameStats | null> {
-    return await axiosInstance({ method: "get", url: "/liveclientdata/gamestats" }).then(res => res.data, err => {        
-        return null;
-    })
+  return await axiosInstance({ method: "get", url: "/liveclientdata/gamestats" }).then(res => res.data, () => {
+    return null;
+  });
 }
 
 export const IngameAPI = {
-    /** Base url is set */
-    request: axiosInstance.request.bind(axiosInstance),
+  /** Base url is set */
+  request: axiosInstance.request.bind(axiosInstance),
 
-    CERTIFICATE: RIOT_GAMES_CERTIFICATE,
-    /** Change the trusted certificate or disable verification by passing null. If this is never called, then the included certificate is used. */
-    setCertificate: (cert: string | null) => axiosInstance.defaults.httpsAgent = cert !== null ? new Agent({ ca: cert }) : new Agent({ rejectUnauthorized: false }),
+  CERTIFICATE: RIOT_GAMES_CERTIFICATE,
+  /** Change the trusted certificate or disable verification by passing null. If this is never called, then the included certificate is used. */
+  setCertificate: (cert: string | null) => axiosInstance.defaults.httpsAgent = cert !== null ? new Agent({ ca: cert }) : new Agent({ rejectUnauthorized: false }),
 
-    startEventAPI,
-    stopEventAPI,
+  startEventAPI,
+  stopEventAPI,
 
-    on: EVENT_EMITTER.on.bind(EVENT_EMITTER),
-    once: EVENT_EMITTER.once.bind(EVENT_EMITTER),
-    off: EVENT_EMITTER.off.bind(EVENT_EMITTER),
+  on: EVENT_EMITTER.on.bind(EVENT_EMITTER),
+  once: EVENT_EMITTER.once.bind(EVENT_EMITTER),
+  off: EVENT_EMITTER.off.bind(EVENT_EMITTER),
 
-    waitForLiveClientAvailability,
-    getAllGameData,
-    getActivePlayer,
-    getActivePlayerAbilities,
-    getActivePlayerRunes,
-    getPlayerList,
-    getPlayerScores,
-    getPlayerSummonerSpells,
-    getPlayerMainRunes,
-    getPlayerItems,
-    getEvents,
-    getGameStats,
-    getActivePlayerRiotId,
+  waitForLiveClientAvailability,
+  getAllGameData,
+  getActivePlayer,
+  getActivePlayerAbilities,
+  getActivePlayerRunes,
+  getPlayerList,
+  getPlayerScores,
+  getPlayerSummonerSpells,
+  getPlayerMainRunes,
+  getPlayerItems,
+  getEvents,
+  getGameStats,
+  getActivePlayerRiotId,
 } as const;
