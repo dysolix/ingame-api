@@ -3,8 +3,9 @@
   "version": "0.2.1",
   "scripts": {
     "build": "tsc",
+    "check:package": "npm run build && publint && attw --pack",
     "cleanup": "rimraf index.js index.d.ts",
-    "pub": "npm run build && npm publish --access public && npm run cleanup"
+    "pub": "npm run check:package && npm publish --access public && npm run cleanup"
   },
   "keywords": [
     "hasagi"
@@ -21,7 +22,9 @@
   },
   "types": "./index.d.ts",
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.3",
     "@types/node": "^20.19.42",
+    "publint": "^0.3.21",
     "rimraf": "^5.0.5",
     "typescript": "^6.0.3"
   }
