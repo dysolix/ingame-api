@@ -9,7 +9,7 @@ enum Team {
 
 type BooleanString = "True" | "False";
 
-namespace IngameAPI {
+export namespace IngameAPI {
     export type LocalPlayerAbilities = {
         Passive: LiveClientPassiveAbility,
         Q: LiveClientAbility,
@@ -564,7 +564,7 @@ async function getGameStats(): Promise<IngameAPI.GameStats | null> {
     })
 }
 
-const IngameAPI = {
+export const IngameAPI = {
     /** Base url is set */
     request: axiosInstance.request.bind(axiosInstance),
 
@@ -593,5 +593,3 @@ const IngameAPI = {
     getGameStats,
     getActivePlayerRiotId,
 } as const;
-
-export default IngameAPI;
