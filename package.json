@@ -4,8 +4,7 @@
   "scripts": {
     "build": "tsc",
     "check:package": "npm run build && publint && attw --pack",
-    "cleanup": "rimraf index.js index.d.ts",
-    "pub": "npm run check:package && npm publish --access public && npm run cleanup"
+    "pub": "npm run check:package && npm publish --access public"
   },
   "keywords": [
     "hasagi"
@@ -18,14 +17,16 @@
   },
   "type": "commonjs",
   "exports": {
-    ".": "./index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
-  "types": "./index.d.ts",
+  "types": "./dist/index.d.ts",
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.3",
     "@types/node": "^20.19.42",
     "publint": "^0.3.21",
-    "rimraf": "^5.0.5",
     "typescript": "^6.0.3"
   }
 }
