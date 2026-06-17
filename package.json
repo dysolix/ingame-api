@@ -25,6 +25,7 @@
       "default": "./index.js"
     }
   },
+  "main": "./index.js",
   "types": "./index.d.ts",
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.3",
