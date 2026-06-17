@@ -1,6 +1,6 @@
 {
   "name": "@hasagi/ingame-api",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "private": true,
   "scripts": {
     "build": "node scripts/prebuild.mjs && tsc && node scripts/postbuild.mjs",
