@@ -368,7 +368,7 @@ async function startEventAPI(options?: { timeout?: number; pollIntervalMs?: numb
 
     if (liveClientEvents === null) {
       consecutiveErrors++;
-      EVENT_EMITTER.emit("error");
+      emitError();
       if (consecutiveErrors >= 3) {
         stopEventAPI();
         return;
@@ -427,6 +427,17 @@ const EVENT_EMITTER = new TypedEmitter<{
   "ace": (event: IngameAPI.AceEvent) => void;
   "game-ended": (event: IngameAPI.GameEndEvent) => void;
 }>();
+
+/**
+ * Emits "error" only when a listener is attached. {@link TypedEmitter} is Node's EventEmitter, which
+ * throws on an "error" event with no registered listener — that would crash the consumer's process
+ * (e.g. a standalone getter call made before any "error" listener is set up). Guarding here keeps a
+ * fault non-fatal and preserves the prior swallow-to-null behavior when nobody is listening.
+ */
+function emitError(error?: unknown) {
+  if (EVENT_EMITTER.listenerCount("error") > 0)
+    EVENT_EMITTER.emit("error", error);
+}
 
 function onLiveClientEvent(event: IngameAPI.Event) {
   events.push(event);
@@ -516,88 +527,92 @@ axiosInstance.interceptors.response.use(res => res, async err => {
   return Promise.reject(err); // I have no idea why this is needed, but it is, at least last time I checked
 });
 
-async function getActivePlayerRiotId() {
-  return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayername" }).then(res => res.data as string, () => {
-    return null;
-  });
+/**
+ * The Live Client Data API server (port 2999) only runs during an active game, so a refused
+ * connection means "not in a game" and a 404 means the endpoint's data isn't ready yet. Both are
+ * expected absences, reported as `null` rather than faults. Anything else (5xx, TLS, parse, timeout)
+ * is a genuine fault.
+ */
+function isExpectedAbsence(error: unknown): boolean {
+  if (!axios.isAxiosError(error))
+    return false;
+  return error.code === "ECONNREFUSED" || error.response?.status === 404;
 }
 
-async function getAllGameData(): Promise<IngameAPI.AllGameData | null> {
-  return await axiosInstance({ method: "get", url: "/liveclientdata/allgamedata" }).then(res => res.data, () => {
+/**
+ * Shared getter for the Live Client Data API. Returns the parsed body on success and `null` for the
+ * two expected "no data" cases (see {@link isExpectedAbsence}). A genuine fault is surfaced via the
+ * "error" event (so it's no longer silently swallowed) and still resolves to `null`, keeping the
+ * `T | null` contract every getter already had.
+ */
+async function get<T>(url: string): Promise<T | null> {
+  try {
+    return (await axiosInstance.get<T>(url)).data;
+  } catch (error) {
+    if (!isExpectedAbsence(error))
+      emitError(error);
     return null;
-  });
+  }
 }
 
-async function getActivePlayer(): Promise<IngameAPI.LocalPlayer | null> {
-  return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayer" }).then(res => res.data, () => {
-    return null;
-  });
+function getActivePlayerRiotId(): Promise<string | null> {
+  return get<string>("/liveclientdata/activeplayername");
 }
 
-async function getActivePlayerAbilities(): Promise<IngameAPI.LocalPlayerAbilities | null> {
-  return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayerabilities" }).then(res => res.data, () => {
-    return null;
-  });
+function getAllGameData(): Promise<IngameAPI.AllGameData | null> {
+  return get<IngameAPI.AllGameData>("/liveclientdata/allgamedata");
 }
 
-async function getActivePlayerRunes(): Promise<IngameAPI.LocalPlayerRunes | null> {
-  return await axiosInstance({ method: "get", url: "/liveclientdata/activeplayerrunes" }).then(res => res.data, () => {
-    return null;
-  });
+function getActivePlayer(): Promise<IngameAPI.LocalPlayer | null> {
+  return get<IngameAPI.LocalPlayer>("/liveclientdata/activeplayer");
 }
 
-async function getPlayerList(): Promise<IngameAPI.Player[] | null> {
-  return await axiosInstance({ method: "get", url: "/liveclientdata/playerlist" }).then(res => res.data, () => {
-    return null;
-  });
+function getActivePlayerAbilities(): Promise<IngameAPI.LocalPlayerAbilities | null> {
+  return get<IngameAPI.LocalPlayerAbilities>("/liveclientdata/activeplayerabilities");
+}
+
+function getActivePlayerRunes(): Promise<IngameAPI.LocalPlayerRunes | null> {
+  return get<IngameAPI.LocalPlayerRunes>("/liveclientdata/activeplayerrunes");
+}
+
+function getPlayerList(): Promise<IngameAPI.Player[] | null> {
+  return get<IngameAPI.Player[]>("/liveclientdata/playerlist");
 }
 
 /**
  * @param riotId The full Riot ID of the player or just the name (not recommended since there could be duplicate names)
  */
-async function getPlayerScores(riotId: string): Promise<IngameAPI.PlayerScores | null> {
-  return await axiosInstance({ method: "get", url: "/liveclientdata/playerscores?riotId=" + encodeURIComponent(riotId) }).then(res => res.data, () => {
-    return null;
-  });
+function getPlayerScores(riotId: string): Promise<IngameAPI.PlayerScores | null> {
+  return get<IngameAPI.PlayerScores>("/liveclientdata/playerscores?riotId=" + encodeURIComponent(riotId));
 }
 
 /**
  * @param riotId The full Riot ID of the player or just the name (not recommended since there could be duplicate names)
  */
-async function getPlayerSummonerSpells(riotId: string): Promise<IngameAPI.PlayerSummonerSpells | null> {
-  return await axiosInstance({ method: "get", url: "/liveclientdata/playersummonerspells?riotId=" + encodeURIComponent(riotId) }).then(res => res.data, () => {
-    return null;
-  });
+function getPlayerSummonerSpells(riotId: string): Promise<IngameAPI.PlayerSummonerSpells | null> {
+  return get<IngameAPI.PlayerSummonerSpells>("/liveclientdata/playersummonerspells?riotId=" + encodeURIComponent(riotId));
 }
 
 /**
  * @param riotId The full Riot ID of the player or just the name (not recommended since there could be duplicate names)
  */
-async function getPlayerMainRunes(riotId: string): Promise<IngameAPI.PlayerMainRunes | null> {
-  return await axiosInstance({ method: "get", url: "/liveclientdata/playermainrunes?riotId=" + encodeURIComponent(riotId) }).then(res => res.data, () => {
-    return null;
-  });
+function getPlayerMainRunes(riotId: string): Promise<IngameAPI.PlayerMainRunes | null> {
+  return get<IngameAPI.PlayerMainRunes>("/liveclientdata/playermainrunes?riotId=" + encodeURIComponent(riotId));
 }
 
 /**
  * @param riotId The full Riot ID of the player or just the name (not recommended since there could be duplicate names)
  */
-async function getPlayerItems(riotId: string): Promise<IngameAPI.PlayerItem[] | null> {
-  return await axiosInstance({ method: "get", url: "/liveclientdata/playeritems?riotId=" + encodeURIComponent(riotId) }).then(res => res.data, () => {
-    return null;
-  });
+function getPlayerItems(riotId: string): Promise<IngameAPI.PlayerItem[] | null> {
+  return get<IngameAPI.PlayerItem[]>("/liveclientdata/playeritems?riotId=" + encodeURIComponent(riotId));
 }
 
-async function getEvents(): Promise<{ Events: IngameAPI.Event[] } | null> {
-  return await axiosInstance({ method: "get", url: "/liveclientdata/eventdata" }).then(res => res.data, () => {
-    return null;
-  });
+function getEvents(): Promise<{ Events: IngameAPI.Event[] } | null> {
+  return get<{ Events: IngameAPI.Event[] }>("/liveclientdata/eventdata");
 }
 
-async function getGameStats(): Promise<IngameAPI.GameStats | null> {
-  return await axiosInstance({ method: "get", url: "/liveclientdata/gamestats" }).then(res => res.data, () => {
-    return null;
-  });
+function getGameStats(): Promise<IngameAPI.GameStats | null> {
+  return get<IngameAPI.GameStats>("/liveclientdata/gamestats");
 }
 
 export const IngameAPI = {
